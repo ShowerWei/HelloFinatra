@@ -7,7 +7,7 @@ Simple Finatra demo with MongoDB
 ###Step 1: Setup MongoDB with data volume
 Create data volume
 ```
-docker create --name mongo-data-volume -v /home/user/var/mongo_home mongo:latest
+docker create --name mongo-data-volume -v /data/db mongo:latest
 ```
 Run mongo container
 ```
