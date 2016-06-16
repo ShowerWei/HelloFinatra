@@ -33,3 +33,6 @@ Connect using the new user to any database you want and add further users
 use another
 db.createUser({ user: "user", pwd: "1234", roles: ["readWrite"] })
 ```
+```
+curl -H "Content-Type: application/json" -X POST -d '{"user":"ryan","weight":"51"}' http://localhost:8087/mongo/weights
+```
