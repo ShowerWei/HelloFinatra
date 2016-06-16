@@ -26,7 +26,7 @@ db.createUser({ user: 'admin', pwd: 'password', roles: [ { role: "root", db: "ad
 
 Shell back into mongodb with the above admin user
 ```
-docker exec -it ryan-mongo mongo --port 27017 -u admin -p password --authenticationDatabase admin
+docker exec -it ryan-mongo mongo --port 27017 -u admin -p password admin
 ```
 Connect using the new user to any database you want and add further users
 ```
