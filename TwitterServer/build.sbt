@@ -38,3 +38,5 @@ libraryDependencies +=  "com.twitter.finatra" % "finatra-jackson_2.11" % version
 
 libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
 libraryDependencies += "org.specs2" %% "specs2" % "2.3.12" % "test"
+
+libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "1.1.1"

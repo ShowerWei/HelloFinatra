@@ -2,9 +2,7 @@ package com.ryan.fitman.api
 
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.Controller
-import com.twitter.finatra.validation.{Range, Size}
 import com.twitter.inject.Logging
-import org.joda.time.Instant
 
 import scala.collection.mutable
 
@@ -72,10 +70,3 @@ class WeightResource extends Controller with Logging {
   }
 
 }
-
-case class Weight(
-                   @Size(min = 1, max = 25) user: String,
-                   @Range(min = 25, max = 200) weight: Int,
-                   status: Option[String],
-                   postedAt: Instant = Instant.now()
-                 )
