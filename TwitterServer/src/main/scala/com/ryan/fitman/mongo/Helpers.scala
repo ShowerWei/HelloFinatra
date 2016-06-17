@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-
 import org.mongodb.scala._
 
 
@@ -48,6 +47,12 @@ object Helpers {
     }
 
     def printHeadResult(initial: String = ""): Unit = println(s"${initial}${converter(headResult())}")
-  }
 
+    def outputResult(initial: String = ""): String = {
+      if (initial.length > 0) print(initial)
+      val str = StringBuilder.newBuilder
+      results().foreach(res => str.append(converter(res)))
+      str.toString()
+    }
+  }
 }
