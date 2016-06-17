@@ -30,9 +30,39 @@ docker exec -it ryan-mongo mongo --port 27017 -u admin -p password admin
 ```
 Connect using the new user to any database you want and add further users
 ```
-use another
+use finatra
 db.createUser({ user: "user", pwd: "1234", roles: ["readWrite"] })
 ```
+
+##appendix
+### Using cURL to automate HTTP jobs
+
+get all users' weight
 ```
-curl -H "Content-Type: application/json" -X POST -d '{"user":"ryan","weight":"51"}' http://localhost:8087/mongo/weights
+curl -i http://localhost:8087/mongo/weights
+```
+
+get someone's weight
+```
+curl -i http://localhost:8087/mongo/weights/user_name
+```
+
+create an user
+```
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights -X POST -d '{"user":"CY","weight":"33"}'
+```
+
+update an user
+```
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/update -X PUT -d '{"user":"CY","weight":"55"}'
+```
+
+replace an user
+```
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/replace -X PUT -d '{"user":"CY","weight":"50"}'
+```
+
+delete an user
+```
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/delete -X DELETE -d '{"user":"CY"}'
 ```
