@@ -1,17 +1,19 @@
 package com.ryan.fitman.api
 
+
 import com.ryan.fitman.mongo.Helpers._
-import com.ryan.fitman.mongo.MongoHelper._
-import com.ryan.fitman.mongo.{MongoConfig, MongoHelper}
+import com.ryan.fitman.mongo.DocumentHelpers._
+import com.ryan.fitman.mongo.MongoConfig
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.Controller
 import com.twitter.finatra.utils.FuturePools
 import com.twitter.inject.Logging
-import org.mongodb.scala.{Completed, Document, Observer}
 import MongoConfig.dbName
 import MongoConfig.weightCollection
+import com.mongodb.client.model.UpdateOptions
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
+import org.mongodb.scala.model.Updates._
 
 
 // Create = PUT with a new URI
@@ -27,31 +29,28 @@ class WeightMongoDB extends Controller with Logging {
   val futurePool = FuturePools.unboundedPool("CallbackConverter")
 
   get("/mongo/weights") { request: Request =>
-    info("finding all weights for all users...")
-
+    futurePool {
+      info("finding all weights for all users...")
+      collection.find()
+        .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_POSTED_AT), excludeId())).outputResult("Get all users: ")
+    }
   }
 
   get("/mongo/weights/:user") { request: Request =>
     futurePool {
-      info(s"finding weight for user ${request.params("user")}")
-
+      info(s"finding weight for user ${request.params(KEY_USER)}")
+      // ":user" subString to "user"
+      collection.find(equal(KEY_USER, request.params(KEY_USER).substring(1)))
+        .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_POSTED_AT), excludeId())).outputResult("Get user weight: ")
     }
   }
 
   post("/mongo/weights") { weight: Weight =>
     futurePool {
-      val r = time(s"Total time take to POST weight into MongoDB for user '${weight.user}' is %d ms") {
-
-        val doc = MongoHelper.convert(weight)
-
-        collection.insertOne(doc).subscribe(new Observer[Completed] {
-
-          override def onNext(result: Completed): Unit = println("Inserted")
-
-          override def onError(e: Throwable): Unit = println("Failed")
-
-          override def onComplete(): Unit = println("Completed")
-        })
+      val r = time(s"Total time take to POST weight for user '${weight.user}' is %d ms") {
+        //mongo.Helpers._ wraps an observable and provides a new method, results().
+        //mongo.DocumentHelps._ wraps an Weight and provides a new method, convertToDoc().
+        collection.insertOne(weight.convertToDoc()).outputResult("Insert a user: ")
         response.created.location(s"/weights/${weight.user}")
       }
       r
@@ -59,25 +58,29 @@ class WeightMongoDB extends Controller with Logging {
   }
 
   put("/mongo/weights/update") { weight: Weight =>
-    info(s"Update weight ${weight.user}")
-
-    response.created.location(s"/weights/${weight.user}")
+    futurePool {
+      info(s"Total time take to Update weight for user ${weight.user}")
+      collection.updateOne(equal(KEY_USER, weight.user), set(KEY_WEIGHT, weight.weight), new UpdateOptions().upsert(true)).results()
+      response.created.location(s"/weights/${weight.user}")
+    }
   }
 
-
+  put("/mongo/weights/replace") { weight: Weight =>
+    futurePool {
+      info(s"Total time take to Update weight for user ${weight.user}")
+      collection.findOneAndReplace(equal(KEY_USER, weight.user), weight.convertToDoc()).results()
+      response.created.location(s"/weights/${weight.user}")
+    }
+  }
 
   delete("/mongo/weights/delete") { weight: Weight =>
     futurePool {
-      val r = time(s"Total time take to POST weight into MongoDB for user '${weight.user}' is %d ms") {
-
-        val doc = MongoHelper.convert(weight)
-
-        collection.deleteOne(equal("user", weight.user)).results()
+      val r = time(s"Total time take to DELETE weight for user '${weight.user}' is %d ms") {
+        collection.findOneAndDelete(equal(KEY_USER, weight.user)).results()
         response.created.location(s"/weights/${weight.user}")
       }
       r
     }
-    response.created.location(s"/weights/${weight.user}")
   }
 
 }
