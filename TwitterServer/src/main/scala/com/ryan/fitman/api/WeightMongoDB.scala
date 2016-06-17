@@ -39,8 +39,7 @@ class WeightMongoDB extends Controller with Logging {
   get("/mongo/weights/:user") { request: Request =>
     futurePool {
       info(s"finding weight for user ${request.params(KEY_USER)}")
-      // ":user" subString to "user"
-      collection.find(equal(KEY_USER, request.params(KEY_USER).substring(1)))
+      collection.find(equal(KEY_USER, request.params(KEY_USER)))
         .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_POSTED_AT), excludeId())).outputResult("Get user weight: ")
     }
   }
