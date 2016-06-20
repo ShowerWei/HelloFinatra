@@ -45,7 +45,7 @@ curl -i http://localhost:8087/mongo/weights/user_name
 
 create an user
 ```
-curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights -X POST -d '{"user":"CY","weight":"33"}'
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights -X POST -d '{"user":"CY","weight":"33","status":"Good"}'
 ```
 
 update an user
@@ -55,10 +55,10 @@ curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/
 
 replace an user
 ```
-curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/replace -X PUT -d '{"user":"CY","weight":"50"}'
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/replace -X PUT -d '{"user":"CY","weight":"50","status":"GG"}'
 ```
 
 delete an user
 ```
-curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/delete -X DELETE -d '{"user":"CY"}'
+curl -H "Content-Type: application/json" -i http://localhost:8087/mongo/weights/delete -X DELETE -d '{"user":"CY","weight":"50"}'
 ```
