@@ -48,8 +48,7 @@ object Helpers {
 
     def printHeadResult(initial: String = ""): Unit = println(s"${initial}${converter(headResult())}")
 
-    def outputResult(initial: String = ""): String = {
-      if (initial.length > 0) print(initial)
+    def outputResult(): String = {
       val str = StringBuilder.newBuilder
       results().foreach(res => str.append(converter(res)))
       str.toString()
