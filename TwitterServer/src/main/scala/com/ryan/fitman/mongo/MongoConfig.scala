@@ -4,11 +4,10 @@ import java.util
 
 import com.mongodb.ServerAddress
 import com.mongodb.connection.ClusterSettings
-import com.twitter.inject.TwitterModule
 import org.mongodb.scala.{MongoClient, MongoClientSettings, MongoCollection, MongoCredential, MongoDatabase, _}
 
 
-object MongoConfig extends TwitterModule {
+object MongoConfig {
 
   var mongoClient = MongoClient()
 
