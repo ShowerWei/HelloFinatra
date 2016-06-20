@@ -1,7 +1,7 @@
 package com.ryan.fitman.api
 
 
-import com.ryan.fitman.mongo.Helpers._
+import com.ryan.fitman.mongo.ObservableHelpers._
 import com.ryan.fitman.mongo.DocumentHelpers._
 import com.ryan.fitman.mongo.MongoConfig
 import com.twitter.finagle.http.Request
@@ -49,11 +49,6 @@ class WeightMongoDB extends Controller with Logging {
       val r = time(s"Total time take to POST weight for user '${weight.user}' is %d ms") {
         //mongo.Helpers._ wraps an observable and provides a new method, results().
         //mongo.DocumentHelps._ wraps an Weight and provides a new method, convertToDoc().
-        println(org.joda.time.Instant.now().toDate)
-        println(org.joda.time.Instant.now().toDate.toInstant)
-        println(org.joda.time.Instant.now().toDate.toString)
-        println(weight.postedAt)
-        println(weight.convertToDoc().toJson())
         collection.insertOne(weight.convertToDoc()).results()
         response.created.location(s"/mongo/weights/${weight.user}")
       }
