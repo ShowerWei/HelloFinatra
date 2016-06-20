@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import org.mongodb.scala._
+import org.mongodb.scala.{Document, Observable}
 
 
 object Helpers {
