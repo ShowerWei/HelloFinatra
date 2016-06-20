@@ -6,11 +6,11 @@ Setup MongoDB
 ### Step 1: Setup MongoDB with data volume
 Create data volume
 ```
-docker create --name mongo-data-volume -v /data/db mongo:latest
+docker create --name mongo-data-volume -v /data/db mongo:3.2
 ```
 Run mongo container
 ```
-docker run -d --name ryan-mongo -p 27017:27017 --volumes-from mongo-data-volume mongo:latest --auth
+docker run -d --name ryan-mongo -p 27017:27017 --volumes-from mongo-data-volume mongo:3.2 --auth
 ```
 ### Step 2: Authorized admin
 Connecting to: admin
