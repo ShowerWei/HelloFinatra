@@ -32,7 +32,7 @@ class WeightMongoDB extends Controller with Logging {
     futurePool {
       info("finding all weights for all users...")
       collection.find()
-        .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_POSTED_AT), excludeId())).outputResult()
+        .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_STATUS), excludeId())).outputResult()
     }
   }
 
@@ -40,7 +40,7 @@ class WeightMongoDB extends Controller with Logging {
     futurePool {
       info(s"finding weight for user ${request.params(KEY_USER)}")
       collection.find(equal(KEY_USER, request.params(KEY_USER)))
-        .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_POSTED_AT), excludeId())).outputResult()
+        .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_STATUS), excludeId())).outputResult()
     }
   }
 
@@ -49,7 +49,12 @@ class WeightMongoDB extends Controller with Logging {
       val r = time(s"Total time take to POST weight for user '${weight.user}' is %d ms") {
         //mongo.Helpers._ wraps an observable and provides a new method, results().
         //mongo.DocumentHelps._ wraps an Weight and provides a new method, convertToDoc().
-        collection.insertOne(weight.convertToDoc()).outputResult()
+        println(org.joda.time.Instant.now().toDate)
+        println(org.joda.time.Instant.now().toDate.toInstant)
+        println(org.joda.time.Instant.now().toDate.toString)
+        println(weight.postedAt)
+        println(weight.convertToDoc().toJson())
+        collection.insertOne(weight.convertToDoc()).results()
         response.created.location(s"/mongo/weights/${weight.user}")
       }
       r
@@ -60,7 +65,7 @@ class WeightMongoDB extends Controller with Logging {
     futurePool {
       info(s"Total time take to Update weight for user ${weight.user}")
       collection.updateOne(equal(KEY_USER, weight.user), set(KEY_WEIGHT, weight.weight), new UpdateOptions().upsert(true)).results()
-      response.created.location(s"/mongo/weights/${weight.user}")
+      response.ok.location(s"/mongo/weights/${weight.user}")
     }
   }
 
@@ -68,7 +73,7 @@ class WeightMongoDB extends Controller with Logging {
     futurePool {
       info(s"Total time take to Update weight for user ${weight.user}")
       collection.findOneAndReplace(equal(KEY_USER, weight.user), weight.convertToDoc()).results()
-      response.created.location(s"/mongo/weights/${weight.user}")
+      response.ok.location(s"/mongo/weights/${weight.user}")
     }
   }
 
@@ -76,7 +81,7 @@ class WeightMongoDB extends Controller with Logging {
     futurePool {
       val r = time(s"Total time take to DELETE weight for user '${weight.user}' is %d ms") {
         collection.findOneAndDelete(equal(KEY_USER, weight.user)).results()
-        response.created.location(s"/mongo/weights/${weight.user}")
+        response.ok.location(s"/mongo/weights/${weight.user}")
       }
       r
     }
