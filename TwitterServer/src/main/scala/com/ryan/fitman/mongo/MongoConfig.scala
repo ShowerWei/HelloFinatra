@@ -4,10 +4,11 @@ import java.util
 
 import com.mongodb.ServerAddress
 import com.mongodb.connection.ClusterSettings
+import com.twitter.inject.{Injector, TwitterModule}
 import org.mongodb.scala.{MongoClient, MongoClientSettings, MongoCollection, MongoCredential, MongoDatabase, _}
 
 
-object MongoConfig {
+object MongoConfig extends TwitterModule {
 
   var mongoClient = MongoClient()
 
@@ -22,6 +23,7 @@ object MongoConfig {
 
 
   def connect(dbName: String, collection: String): MongoCollection[Document] = {
+    println("=================db connect==================")
     val server: util.ArrayList[ServerAddress] = new util.ArrayList()
 
     server.add(new ServerAddress(host, port))
@@ -34,14 +36,16 @@ object MongoConfig {
 
     val clientSettings = MongoClientSettings.builder().clusterSettings(clusterSettings).credentialList(credentials).build()
 
-    val mongoClient = MongoClient(clientSettings)
+    mongoClient = MongoClient(clientSettings)
 
     val database: MongoDatabase = mongoClient.getDatabase(dbName)
 
     database.getCollection(collection)
   }
 
-  def disConnect(): Unit = {
+  override def singletonShutdown(injector: Injector) {
+    println("=================db disconnect==================")
     mongoClient.close()
   }
+
 }

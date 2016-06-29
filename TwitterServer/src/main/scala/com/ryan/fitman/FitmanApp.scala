@@ -11,6 +11,8 @@ object FitmanApp extends FitmanServer
 
 class FitmanServer extends HttpServer {
 
+  override val modules = Seq(MongoConfig)
+
   override protected def defaultFinatraHttpPort: String = ":8087"
 
   override protected def configureHttp(router: HttpRouter): Unit = {
@@ -19,10 +21,6 @@ class FitmanServer extends HttpServer {
       .add[HelloController]
       .add[WeightResource]
       .add[WeightMongoDB]
-  }
-
-  onExit {
-    MongoConfig.disConnect()
   }
 }
 
