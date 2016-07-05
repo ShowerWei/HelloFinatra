@@ -2,27 +2,37 @@ package com.ryan.fitman.mongo
 
 import java.util
 
+import scalaz._
+import com.typesafe.config._
 import com.mongodb.ServerAddress
 import com.mongodb.connection.ClusterSettings
 import com.twitter.inject.{Injector, TwitterModule}
 import org.mongodb.scala.{MongoClient, MongoClientSettings, MongoCollection, MongoCredential, MongoDatabase, _}
+import com.ryan.fitman.mongo.DocumentHelpers._
+import org.mongodb.scala.model.IndexOptions
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.util.{Failure, Success}
 
 
 object MongoConfig extends TwitterModule {
 
-  var mongoClient = MongoClient()
+  private var mongoClient = MongoClient()
 
-  private val host = "127.0.0.1:27017"
-  private val port = 27017
+  val config = ConfigFactory.load("mongo")
+  //TODO: Default
+  val host = config.getString("mongo.host")
+  val port = config.getInt("mongo.port") | 27017
 
-  private val user = "user"
-  private val password = "1234"
+  val user = config.getString("mongo.weight.user")
+  val password = config.getString("mongo.weight.password")
 
-  val dbName = "finatra"
-  val weightCollection = "weight"
+  val dbName = config.getString("mongo.dbname")
+  val weightCollection = config.getString("mongo.collection.weight")
 
 
-  def connect(dbName: String, collection: String): MongoCollection[Document] = {
+  def connect(dbName: String, collectionName: String): MongoCollection[Document] = {
     println("=================db connect==================")
     val server: util.ArrayList[ServerAddress] = new util.ArrayList()
 
@@ -40,12 +50,22 @@ object MongoConfig extends TwitterModule {
 
     val database: MongoDatabase = mongoClient.getDatabase(dbName)
 
-    database.getCollection(collection)
+    val collection = database.getCollection(collectionName)
+
+    collection.createIndex(Document(KEY_AGE -> 1), IndexOptions().background(true)).toFuture().onComplete({
+      case Success(res) =>
+        println("future success")
+      case Failure(throwable) =>
+        println("future fail")
+    }
+    )
+
+    collection
   }
 
   override def singletonShutdown(injector: Injector) {
-    println("=================db disconnect==================")
     mongoClient.close()
+    println("=================db disconnect==================")
   }
 
 }

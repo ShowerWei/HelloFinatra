@@ -18,9 +18,13 @@ package com.ryan.fitman.mongo
 
 import java.util.concurrent.TimeUnit
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import com.twitter.util.{CountDownLatch, Duration}
+
 import org.mongodb.scala.{Document, Observable}
+
+import scala.util.{Failure, Success}
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 object ObservableHelpers {
@@ -37,21 +41,21 @@ object ObservableHelpers {
     val observable: Observable[C]
     val converter: (C) => String
 
-    def results(): Seq[C] = Await.result(observable.toFuture(), Duration(10, TimeUnit.SECONDS))
-
-    def headResult() = Await.result(observable.head(), Duration(10, TimeUnit.SECONDS))
-
-    def printResults(initial: String = ""): Unit = {
-      if (initial.length > 0) print(initial)
-      results().foreach(res => println(converter(res)))
-    }
-
-    def printHeadResult(initial: String = ""): Unit = println(s"${initial}${converter(headResult())}")
-
-    def outputResult(): String = {
+    def future(): String = {
       val str = StringBuilder.newBuilder
-      results().foreach(res => str.append(converter(res)))
+      val latch = new CountDownLatch(1)
+
+      observable.toFuture().onComplete({
+        case Success(res) =>
+          res.foreach(doc => str.append(converter(doc)))
+          println("future success")
+          latch.countDown()
+        case Failure(throwable) =>
+          println("future fail")
+      })
+      latch.await(Duration(10, TimeUnit.SECONDS))
       str.toString()
     }
   }
+
 }
