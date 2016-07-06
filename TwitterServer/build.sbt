@@ -40,5 +40,13 @@ libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
 libraryDependencies += "org.specs2" %% "specs2" % "2.3.12" % "test"
 
 libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "1.1.1"
+libraryDependencies += "com.typesafe" % "config" % "1.3.0"
+
+// https://mvnrepository.com/artifact/com.twitter/bijection-core_2.11
+libraryDependencies += "com.twitter" % "bijection-core_2.11" % "0.9.2"
+
+// https://mvnrepository.com/artifact/com.twitter/bijection-util_2.11
+libraryDependencies += "com.twitter" % "bijection-util_2.11" % "0.9.2"
+
 
 cancelable in Global := true
