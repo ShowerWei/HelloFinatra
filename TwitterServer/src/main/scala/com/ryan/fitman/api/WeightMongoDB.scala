@@ -140,10 +140,17 @@ class WeightMongoDB extends Controller with Logging {
 
   put("/mongo/weights/update") { weight: Weight =>
     val r = time(s"Total time take to Update weight for user ${weight.user} is %d ms") {
-      collection.updateOne(equal(KEY_USER, weight.user),
-        set(KEY_WEIGHT, weight.weight),
-        new UpdateOptions().upsert(true)).toFuture()
-      response.ok.location(s"/mongo/weights/${weight.user}")
+      val result = (for {
+        seqDocs <- collection.updateOne(equal(KEY_USER, weight.user),
+          set(KEY_WEIGHT, weight.weight),
+          new UpdateOptions().upsert(true)).toFuture()
+      } yield {
+        response.ok.location(s"/mongo/weights/${weight.user}")
+      }).recover {
+        case e: Throwable => println("error" + e)
+          response.internalServerError
+      }
+      result.as[TwitterFuture[ResponseBuilder#EnrichedResponse]]
     }
     r
   }

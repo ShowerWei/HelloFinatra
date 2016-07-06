@@ -53,9 +53,9 @@ object MongoConfig extends TwitterModule {
 
     collection.createIndex(Document(KEY_AGE -> 1), IndexOptions().background(true)).toFuture().onComplete({
       case Success(res) =>
-        println("createIndex success")
+        println("=================createIndex success=================")
       case Failure(throwable) =>
-        println("createIndex fail")
+        println("=================createIndex fail=================")
     }    )
 
     collection
