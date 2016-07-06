@@ -2,7 +2,6 @@ package com.ryan.fitman.mongo
 
 import java.util
 
-import scalaz._
 import com.typesafe.config._
 import com.mongodb.ServerAddress
 import com.mongodb.connection.ClusterSettings
@@ -54,11 +53,10 @@ object MongoConfig extends TwitterModule {
 
     collection.createIndex(Document(KEY_AGE -> 1), IndexOptions().background(true)).toFuture().onComplete({
       case Success(res) =>
-        println("future success")
+        println("createIndex success")
       case Failure(throwable) =>
-        println("future fail")
-    }
-    )
+        println("createIndex fail")
+    }    )
 
     collection
   }
@@ -67,5 +65,4 @@ object MongoConfig extends TwitterModule {
     mongoClient.close()
     println("=================db disconnect==================")
   }
-
 }

@@ -41,7 +41,6 @@ libraryDependencies += "org.specs2" %% "specs2" % "2.3.12" % "test"
 
 libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "1.1.1"
 libraryDependencies += "com.typesafe" % "config" % "1.3.0"
-libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.4"
 
 // https://mvnrepository.com/artifact/com.twitter/bijection-core_2.11
 libraryDependencies += "com.twitter" % "bijection-core_2.11" % "0.9.2"

@@ -42,4 +42,17 @@ object DocumentHelpers {
     def randomAge(): Int = Random.nextInt(100) + 30
   }
 
+  implicit class Jsonize(document: Seq[Document]) {
+    def jsonizeDocs(): String = {
+      val sb=new StringBuilder
+      for (doc <- document) {
+        if (sb.nonEmpty) {
+          sb.append(",")
+        }
+        sb.append(doc.toJson)
+      }
+      sb.toString
+    }
+  }
+
 }
