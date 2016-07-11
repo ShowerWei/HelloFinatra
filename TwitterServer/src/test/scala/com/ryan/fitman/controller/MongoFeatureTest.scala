@@ -1,20 +1,50 @@
-package com.ryan.fitman.api
+package com.ryan.fitman.controller
 
 import com.ryan.fitman.FitmanServer
 import com.twitter.finagle.http.Status
 import com.twitter.finatra.http.test.EmbeddedHttpServer
 import com.twitter.inject.server.FeatureTest
 
-class WeightResourceFeatureTest extends FeatureTest {
+
+class MongoFeatureTest extends FeatureTest {
   override val server = new EmbeddedHttpServer(
     twitterServer = new FitmanServer
   )
 
-  "WeightResource" should {
+  "MongoDB" should {
 
-    "Save user weight when POST request is made" in {
+    "List weight for a user when GET request is made" in {
+      val response = server.httpPost(
+        path = "/mongo/weights",
+        postBody =
+          s"""
+            |{
+            |"user":"test_user_1",
+            |"weight":80,
+            |"status":"Feeling great!!!",
+            |"posted_at" : "2016-01-03T14:34:06.871Z"
+            |}
+          """.stripMargin,
+        andExpect = Status.Created
+      )
+
+      server.httpGetJson[Weight](
+        path = response.location.get, //Location -> /weights/test_user_1
+        andExpect = Status.Ok,
+        withJsonBody =
+          s"""
+            |{
+            |"user" : "test_user_1",
+            |"weight" : 80,
+            |"status":"Feeling great!!!"
+            |}
+          """.stripMargin
+      )
+    }
+
+    "Insert user weight when POST request is made " in {
       server.httpPost(
-        path = "/weights",
+        path = "/mongo/weights",
         postBody =
           """
             |{
@@ -28,39 +58,9 @@ class WeightResourceFeatureTest extends FeatureTest {
       )
     }
 
-    "List all weights for a user when GET request is made" in {
-      val response = server.httpPost(
-        path = "/weights",
-        postBody =
-          """
-            |{
-            |"user":"test_user_1",
-            |"weight":80,
-            |"posted_at" : "2016-01-03T14:34:06.871Z"
-            |}
-          """.stripMargin,
-        andExpect = Status.Created
-      )
-
-      server.httpGetJson[List[Weight]](
-        path = response.location.get, //Location -> /weights/test_user_1
-        andExpect = Status.Ok,
-        withJsonBody =
-          """
-            |[
-            |  {
-            |    "user" : "test_user_1",
-            |    "weight" : 80,
-            |    "posted_at" : "2016-01-03T14:34:06.871Z"
-            |  }
-            |]
-          """.stripMargin
-      )
-    }
-
     "Bad request when user is not present in request" in {
       server.httpPost(
-        path = "/weights",
+        path = "/mongo/weights",
         postBody =
           """
             |{
@@ -73,7 +73,7 @@ class WeightResourceFeatureTest extends FeatureTest {
 
     "Bad request when data not in range" in {
       server.httpPost(
-        path = "/weights",
+        path = "/mongo/weights",
         postBody =
           """
             |{
@@ -91,7 +91,7 @@ class WeightResourceFeatureTest extends FeatureTest {
 
     "Update user weight when PUT request is made" in {
       val response = server.httpPut(
-        path = "/weights/update",
+        path = "/mongo/weights/update",
         putBody =
           """
             |{
@@ -101,23 +101,50 @@ class WeightResourceFeatureTest extends FeatureTest {
             |"posted_at" : "2016-01-03T14:34:06.871Z"
             |}
           """.stripMargin,
-        andExpect = Status.Created,
+        andExpect = Status.Ok,
         withLocation = "/weights/shekhar"
       )
 
-      server.httpGetJson[List[Weight]](
+      server.httpGetJson[Weight](
         path = response.location.get,
         andExpect = Status.Ok,
         withJsonBody =
           """
-            |[
-            |  {
-            |  "user":"shekhar",
-            |  "weight":80,
-            |  "status":"Feeling great!!!",
-            |  "posted_at" : "2016-01-03T14:34:06.871Z"
-            |  }
-            |]
+            |{
+            |"user":"shekhar",
+            |"weight":80,
+            |"status":"Feeling great!!!"
+            | }
+          """.stripMargin
+      )
+    }
+
+    "Replace user weight when PUT request is made" in {
+      val response = server.httpPut(
+        path = "/mongo/weights/replace",
+        putBody =
+          """
+            |{
+            |"user":"shekhar",
+            |"weight":99,
+            |"status":"Hungry",
+            |"posted_at" : "2016-06-20T14:34:06.871Z"
+            |}
+          """.stripMargin,
+        andExpect = Status.Ok,
+        withLocation = "/weights/shekhar"
+      )
+
+      server.httpGetJson[Weight](
+        path = response.location.get,
+        andExpect = Status.Ok,
+        withJsonBody =
+          """
+            |{
+            |"user":"shekhar",
+            |"weight":99,
+            |"status":"Hungry"
+            |}
           """.stripMargin
       )
     }
@@ -125,7 +152,7 @@ class WeightResourceFeatureTest extends FeatureTest {
     "Delete user weight when DELETE request is made" in {
 
       val response = server.httpDelete(
-        path = "/weights/delete",
+        path = "/mongo/weights/delete",
         headers = Map("Content-Type" -> "application/json"),
         deleteBody =
           """
@@ -134,16 +161,7 @@ class WeightResourceFeatureTest extends FeatureTest {
             |"weight":85
             |}
           """.stripMargin,
-        andExpect = Status.Created
-      )
-
-      server.httpGetJson[List[Weight]](
-        path = response.location.get,
-        andExpect = Status.Ok,
-        withJsonBody =
-          """
-            |[]
-          """.stripMargin
+        andExpect = Status.Ok
       )
     }
   }

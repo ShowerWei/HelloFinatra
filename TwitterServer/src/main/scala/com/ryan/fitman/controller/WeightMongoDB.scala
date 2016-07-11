@@ -1,4 +1,4 @@
-package com.ryan.fitman.api
+package com.ryan.fitman.controller
 
 import com.ryan.fitman.mongo.DocumentHelpers._
 import com.ryan.fitman.mongo.MongoConfig
@@ -71,7 +71,9 @@ class WeightMongoDB extends Controller with Logging {
     val r = time(s"Total time take to search weight ${request.params(KEY_WEIGHT)} is %d ms") {
       val result = (for {
         seqDocs <- collection.find(equal(KEY_WEIGHT, request.params(KEY_WEIGHT).toInt))
-          .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_AGE, KEY_STATUS), excludeId())).toFuture()
+          .projection(fields(include(KEY_USER, KEY_AGE, KEY_WEIGHT), excludeId()))
+          .sort(Document(KEY_WEIGHT -> -1, KEY_AGE -> 1, KEY_USER -> 1))
+          .toFuture()
       } yield {
         response.ok.json(seqDocs.jsonizeDocs())
       }).recover {
@@ -87,7 +89,8 @@ class WeightMongoDB extends Controller with Logging {
     val r = time(s"Total time take to search age ${request.params(KEY_AGE)} is %d ms") {
       val result = (for {
         seqDocs <- collection.find(equal(KEY_AGE, request.params(KEY_AGE).toInt))
-          .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_AGE, KEY_STATUS), excludeId())).toFuture()
+          .projection(fields(include(KEY_USER, KEY_AGE, KEY_WEIGHT), excludeId()))
+          .sort(Document(KEY_USER -> 1, KEY_AGE -> 1, KEY_WEIGHT -> -1)).toFuture()
       } yield {
         response.ok.json(seqDocs.jsonizeDocs())
       }).recover {
@@ -114,21 +117,20 @@ class WeightMongoDB extends Controller with Logging {
     r
   }
 
-  post("/mongo/weights/random") { weight: Weight =>
+  post("/mongo/weights/random/:num") { request: Request =>
     val r = time(s"Total time take to post random users is %d ms") {
-
       val result = (for {
         listDocs <- Future {
           val listBuf = ListBuffer[Document]()
-          for (a <- 1 to 50000) {
-            listBuf += weight.randomDoc()
+          for (i <- 1 to request.getParam("num").toInt) {
+            listBuf += randomDoc()
           }
           listBuf.toList
         }
 
         seqDocs <- collection.insertMany(listDocs).toFuture()
       } yield {
-        response.created.location(s"/mongo/weights/${weight.user}")
+        response.created
       }).recover {
         case e: Throwable => println("error" + e)
           response.internalServerError

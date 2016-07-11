@@ -3,7 +3,8 @@ package com.ryan.fitman.mongo
 import java.math.BigInteger
 import java.security.SecureRandom
 
-import com.ryan.fitman.api.Weight
+import com.ryan.fitman.controller.Weight
+import org.joda.time.Instant
 import org.mongodb.scala.Document
 
 import scala.util.Random
@@ -27,24 +28,11 @@ object DocumentHelpers {
         KEY_STATUS -> weight.status,
         KEY_POSTED_AT -> weight.postedAt.toDate)
     }
-
-    def randomDoc(): Document = {
-      Document(
-        KEY_USER -> new BigInteger(130, new SecureRandom()).toString(25).substring(0, 24),
-        KEY_WEIGHT -> randomWeight(),
-        KEY_AGE -> randomAge(),
-        KEY_STATUS -> weight.status,
-        KEY_POSTED_AT -> weight.postedAt.toDate)
-    }
-
-    def randomWeight(): Int = Random.nextInt(100) + 25
-
-    def randomAge(): Int = Random.nextInt(100) + 30
   }
 
   implicit class Jsonize(document: Seq[Document]) {
     def jsonizeDocs(): String = {
-      val sb=new StringBuilder
+      val sb = new StringBuilder
       for (doc <- document) {
         if (sb.nonEmpty) {
           sb.append(",")
@@ -55,4 +43,17 @@ object DocumentHelpers {
     }
   }
 
+  def randomDoc(): Document = {
+    val now = Instant.now().toDate
+    Document(
+      KEY_USER -> new BigInteger(130, new SecureRandom()).toString(25).substring(0, 24),
+      KEY_WEIGHT -> randomWeight(),
+      KEY_AGE -> randomAge(),
+      KEY_STATUS -> "Good",
+      KEY_POSTED_AT -> now)
+  }
+
+  def randomWeight(): Int = Random.nextInt(100) + 25
+
+  def randomAge(): Int = Random.nextInt(100) + 25
 }

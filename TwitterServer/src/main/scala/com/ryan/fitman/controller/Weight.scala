@@ -1,4 +1,4 @@
-package com.ryan.fitman.api
+package com.ryan.fitman.controller
 
 import com.twitter.finatra.validation._
 import org.joda.time.Instant
