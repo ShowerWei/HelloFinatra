@@ -5,7 +5,6 @@ import com.twitter.finagle.http.Status
 import com.twitter.finatra.http.test.EmbeddedHttpServer
 import com.twitter.inject.server.FeatureTest
 
-
 class MongoFeatureTest extends FeatureTest {
   override val server = new EmbeddedHttpServer(
     twitterServer = new FitmanServer

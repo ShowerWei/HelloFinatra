@@ -39,6 +39,8 @@ object DocumentHelpers {
         }
         sb.append(doc.toJson)
       }
+      sb.append("]")
+      sb.insert(0,"[")
       sb.toString
     }
   }
