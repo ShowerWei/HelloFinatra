@@ -5,7 +5,7 @@ version := "1.0"
 scalaVersion := "2.11.7"
 
 lazy val versions = new {
-  val finatra = "2.1.6"
+  val finatra = "2.1.5"
   val logback = "1.1.3"
   val guice = "4.0"
   val mongo_scala_driver = "1.1.1"

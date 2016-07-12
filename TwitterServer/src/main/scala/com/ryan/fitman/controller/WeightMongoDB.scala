@@ -77,7 +77,7 @@ class WeightMongoDB extends Controller with Logging with SwaggerSupport {
       val result = (for {
         seqDocs <- collection
           .find(equal(KEY_USER, request.params(KEY_USER)))
-          .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_STATUS), excludeId()))
+          .projection(fields(include(KEY_USER, KEY_WEIGHT, KEY_AGE, KEY_STATUS), excludeId()))
           .toFuture()
       } yield {
         response.ok.json(seqDocs.jsonizeDocs())
@@ -90,11 +90,21 @@ class WeightMongoDB extends Controller with Logging with SwaggerSupport {
     r
   }
 
-  get("/mongo/weights/weight/:weight") { request: Request =>
+  get("/mongo/weights/weight/:weight", swagger { o =>
+    o.summary("Retrieve all users of this weight")
+      .tag("Clients")
+      .produces("application/json")
+      .routeParam[Int](KEY_WEIGHT, "weight route params")
+      .queryParam[Int]("weightQuery", "weight query params")
+      .responseWith(Status.InternalServerError.code, "Unexpected error !")
+      .responseWith(Status.Ok.code, "Retrieve a list of users.")
+  }
+  ) { request: Request =>
     val r = time(s"Total time take to search weight ${request.params(KEY_WEIGHT)} is %d ms") {
       val result = (for {
         seqDocs <- collection
           .find(equal(KEY_WEIGHT, request.params(KEY_WEIGHT).toInt))
+          .filter(gte(KEY_AGE, request.params("weightQuery").toInt))
           .projection(fields(include(KEY_USER, KEY_AGE, KEY_WEIGHT), excludeId()))
           .sort(Document(KEY_WEIGHT -> 1, KEY_AGE -> 1))
           .toFuture()
@@ -128,7 +138,16 @@ class WeightMongoDB extends Controller with Logging with SwaggerSupport {
     r
   }
 
-  post("/mongo/weights") { weight: Weight =>
+  post("/mongo/weights", swagger { o =>
+    o.summary("Add weight for user.")
+      .tag("Clients")
+      .consumes("application/json")
+      .produces("application/json")
+      .bodyParam("weight", "The user information")
+      .responseWith(Status.BadRequest.code, "Bad json body !")
+      .responseWith(Status.InternalServerError.code, "Unexpected error !")
+      .responseWith(Status.Created.code, "Post a user.")
+  }) { weight: Weight =>
     val r = time(s"Total time take to POST weight for user '${weight.user}' is %d ms") {
       val result = (for {
         seqDocs <- collection.insertOne(weight.convertToDoc()).toFuture()

@@ -51,9 +51,16 @@ object MongoConfig extends TwitterModule {
 
     val collection = database.getCollection(collectionName)
 
+    collectionIndexing(collection)
+
+    collection
+  }
+
+  def collectionIndexing(collection: MongoCollection[Document]): Unit ={
     //db.serverStatus() could check memory usage
     //db.collection.stats() could check index/data size
-    /*MongoDB only needs to keep the parts of the index
+    /*
+    MongoDB only needs to keep the parts of the index
     that hold the most recent or 「right-most」 values in RAM.
     This allows for efficient index use for read and write operations
     and minimize the amount of RAM required to support the index.
@@ -61,8 +68,6 @@ object MongoConfig extends TwitterModule {
     collection.index(Document(KEY_AGE -> 1), "singleIndex")
     collection.index(Document(KEY_WEIGHT -> 1, KEY_AGE -> 1), "compoundIndex")
     collection.index(Document(KEY_USER -> 1, KEY_AGE -> 1, KEY_WEIGHT -> -1), "compoundIndex")
-
-    collection
   }
 
   override def singletonShutdown(injector: Injector) {
