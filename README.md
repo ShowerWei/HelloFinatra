@@ -1,5 +1,7 @@
 # HelloFinatra
 Simple Finatra demo with MongoDB
+
+Swagger API-Docs: http://localhost:8087/api-docs/ui
 ## Prerequisite 
 Setup MongoDB
 ## Dockerizing MongoDB
