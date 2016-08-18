@@ -28,7 +28,7 @@ class FitmanServer extends HttpServer {
   override protected def configureHttp(router: HttpRouter): Unit = {
     router
       .filter[CommonFilters]
-      .add(new SwaggerController(swagger = SampleSwagger))
+      .add(new SwaggerController(swagger = SampleSwagger)) //http://localhost:8087/api-docs/ui
       .add[WeightMongoDB]
   }
 }

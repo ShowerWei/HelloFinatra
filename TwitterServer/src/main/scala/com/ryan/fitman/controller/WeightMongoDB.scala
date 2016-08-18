@@ -14,6 +14,7 @@ import MongoConfig.weightCollection
 import com.github.xiaodongw.swagger.finatra.SwaggerSupport
 import com.mongodb.client.model.UpdateOptions
 import com.ryan.fitman.SampleSwagger
+import com.ryan.fitman.domain.http.response.ClientResponse
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Projections._
 import org.mongodb.scala.model.Updates._
@@ -53,7 +54,7 @@ class WeightMongoDB extends Controller with Logging with SwaggerSupport {
       .responseWith(Status.Unauthorized.code, "Bad access token !")
       .responseWith(Status.NotFound.code, "Can't find a specific client !")
       .responseWith(Status.InternalServerError.code, "Unexpected error !")
-      .responseWith[Weight](Status.Ok.code, "Retrieve a specific client.")
+      .responseWith[ClientResponse](Status.Ok.code, "Retrieve a specific client.")
   }
   ) { request: Request =>
     val r = time("finding all weights for all users...is %d ms") {
@@ -95,16 +96,18 @@ class WeightMongoDB extends Controller with Logging with SwaggerSupport {
       .tag("Clients")
       .produces("application/json")
       .routeParam[Int](KEY_WEIGHT, "weight route params")
-      .queryParam[Int]("weightQuery", "weight query params")
+      .queryParam[Int]("ageQuery", "gte age query params")
       .responseWith(Status.InternalServerError.code, "Unexpected error !")
       .responseWith(Status.Ok.code, "Retrieve a list of users.")
   }
   ) { request: Request =>
     val r = time(s"Total time take to search weight ${request.params(KEY_WEIGHT)} is %d ms") {
+      println("request.params(KEY_WEIGHT): " + request.params(KEY_WEIGHT))
+      println("request.params(ageQuery): " + request.params("ageQuery"))
       val result = (for {
         seqDocs <- collection
-          .find(equal(KEY_WEIGHT, request.params(KEY_WEIGHT).toInt))
-          .filter(gte(KEY_AGE, request.params("weightQuery").toInt))
+          .find(and(equal(KEY_WEIGHT, request.params(KEY_WEIGHT).toInt),
+            gte(KEY_AGE, request.params("ageQuery").toInt)))
           .projection(fields(include(KEY_USER, KEY_AGE, KEY_WEIGHT), excludeId()))
           .sort(Document(KEY_WEIGHT -> 1, KEY_AGE -> 1))
           .toFuture()
@@ -162,7 +165,16 @@ class WeightMongoDB extends Controller with Logging with SwaggerSupport {
     r
   }
 
-  post("/mongo/weights/random/:num") { request: Request =>
+  post("/mongo/weights/random/:num", swagger { o =>
+    o.summary("Random users insert into mongodb.")
+      .tag("Config")
+      .consumes("application/json")
+      .produces("application/json")
+      .routeParam[Int]("num", "Numbers of random users")
+      .responseWith(Status.BadRequest.code, "Bad json body !")
+      .responseWith(Status.InternalServerError.code, "Unexpected error !")
+      .responseWith[Weight](Status.Created.code, "Post a user.")
+  }) { request: Request =>
     val r = time(s"Total time take to post random users is %d ms") {
       val result = (for {
         listDocs <- Future {
